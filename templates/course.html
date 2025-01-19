@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <title>NovaLearn</title>
+
+  <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+
+  <!-- Additional CSS Files -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/fontawesome.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/templatemo-tale-seo-agency.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/owl.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/animate.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css" />
+</head>
+
+</head>
+
+<body>
+
+  <!-- ***** Preloader Start ***** -->
+  <div id="js-preloader" class="js-preloader">
+    <div class="preloader-inner">
+      <span class="dot"></span>
+      <div class="dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+  <!-- ***** Preloader End ***** -->
+
+  <!-- ***** Pre-Header Area Start ***** -->
+  <div class="pre-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-sm-9">
+          <div class="left-info">
+            <ul>
+              <li><a href="#"><i class="fa fa-phone"></i>+216 26 560 442</a></li>
+              <li><a href="#"><i class="fa fa-envelope"></i>infocompany@novalearn.com</a></li>
+              <li><a href="#"><i class="fa fa-map-marker"></i>Tunisia</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-4 col-sm-3">
+          <div class="social-icons">
+            <ul>
+              <li><a href="#"><i class="fab fa-facebook"></i></a></li>
+              <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+              <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+              <li><a href="#"><i class="fab fa-google-plus"></i></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ***** Pre-Header Area End ***** -->
+
+  <!-- ***** Header Area Start ***** -->
+  <header class="header-area header-sticky">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <nav class="main-nav">
+            <!-- ***** Logo Start ***** -->
+            <a href="/" class="logo">
+              <img src="{{ url_for('static', filename='assets/images/logo.png') }}" alt="" style="max-width: 112px;">
+            </a>
+            <!-- ***** Logo End ***** -->
+            <!-- ***** Menu Start ***** -->
+            <ul class="nav">
+              <li class="scroll-to-section"><a href="/" >Home</a></li>
+              <li class="scroll-to-section"><a href="#services">About us</a></li>
+              <li class="has-sub">
+                <a href="javascript:void(0)" class="active">Courses</a>
+                <ul class="sub-menu">
+                  <li><a href="course">Arduino card</a></li>
+                  <li><a href="">Tour CNC</a></li>
+                </ul>
+              </li>
+              <li class="scroll-to-section"><a href="#projects">Quiz</a></li>
+              <li class="scroll-to-section"><a href="#contact">Contact</a></li>
+            </ul>
+            <a class='menu-trigger'>
+              <span>Menu</span>
+            </a>
+            <!-- ***** Menu End ***** -->
+          </nav>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <style>
+    .generate-button {
+            position: absolute;
+            top: 10px; /* Adjust the top margin */
+            right: 10px; /* Adjust the right margin */
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(90deg, #0078ff, #005bb5);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000; /* Ensure it appears above content */
+        }
+    
+        .generate-button:hover {
+            background: linear-gradient(90deg, #005bb5, #0078ff);
+            transform: translateY(-2px);
+        }
+    
+        .generate-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+   
+    /* Left Section: Course Content */
+    .course-content {
+        flex: 1;
+        padding: 20px;
+        background: #fff; /* White background for better readability */
+        overflow-y: auto;
+        color: #333; /* Dark text for contrast */
+    }
+
+    .course-content h1, h2, h3 {
+        color: #0078ff; /* Highlight color */
+    }
+
+    .course-content h1 {
+        font-size: 2.5em;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .course-content h2 {
+        font-size: 1.8em;
+        margin-top: 30px;
+    }
+
+    .course-content p {
+        color: #555;
+        margin: 10px 0;
+    }
+
+    .course-content img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 20px auto;
+    }
+
+    /* Right Section: Chat Feature */
+    .chatbox-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    .chatbox {
+        width: 400px;
+        height: 600px;
+        display: none; /* Initially hidden */
+        flex-direction: column;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .chat-header {
+        padding: 15px;
+        background-color: #4f34caed;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .chat-header .close-chat {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        background: #f0f2f5;
+    }
+
+    .chat-messages div {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 20px;
+        max-width: 70%;
+    }
+
+    .bot-message {
+        background-color: #e9efff;
+        text-align: left;
+    }
+
+    .user-message {
+        background-color: #9e8fc7;
+        color: #fff;
+        text-align: right;
+        margin-left: auto;
+    }
+
+    .user-image img {
+        max-width: 200px;
+        height: auto;
+        border-radius: 10px;
+    }
+
+    .chat-input {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background-color: #fff;
+        border-top: 1px solid #ddd;
+    }
+
+    .chat-input label {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: #95959500;
+        color: #fff;
+        border-radius: 50%;
+        margin-right: 10px;
+        font-size: 20px;
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-input label:hover {
+        background-color: #a4a4a4;
+    }
+
+    .chat-input input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        background-color: #f9f9f9;
+        font-size: 16px;
+    }
+
+    .chat-input input::placeholder {
+        color: #888;
+    }
+
+    .chat-input input[type="file"] {
+        display: none;
+    }
+
+    .chat-input button {
+        margin-left: 10px;
+        padding: 10px 20px;
+        background-color: #4600eb;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-input button:hover {
+        background-color: #8178b1;
+    }
+
+    /* Chat Toggle Button */
+    .chat-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background-color: #c4cdd700;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-toggle:hover {
+        background-color: #005bb500;
+    }
+</style>
+<div class="contact-us section" id="contact">
+    <!-- Left: Course Content -->
+        
+
+        <!-- Right: Chatbox -->
+        <div class="chatbox-container">
+            <button class="chat-toggle" id="chat-toggle" onclick="toggleChat()">🤖</button>
+            <div class="chatbox" id="chatbox">
+                <div class="chat-header">
+                    Chatbot
+                    <button class="close-chat" onclick="toggleChat()">✖</button>
+                </div>
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="chat-input">
+                    <label for="pdf-upload">📄</label>
+                    <input id="pdf-upload" type="file" accept=".pdf">
+                    <label for="image-upload">🖼️</label>
+                    <input id="image-upload" type="file" accept="image/*" multiple>
+                    <input id="chat-input" type="text" placeholder="Type your message...">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+        
+
+   
+    
+    <div class="contact-us section" id="contact">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="contact-us-content" style="position: relative;">
+                        <div class="row">
+                            <div class="course-content" id="course-content">
+                                <!-- Generate Video Button -->
+                                <button class="generate-button" id="generate-button">Generate Video</button>
+                                <h1>EM: Arduino</h1>
+                                <p>
+                                    A team of developers consisting of Massimo Banzi, David Cuartielles, Tom Igoe, Gianluca Martino, David Mellis,
+                                    and Nicholas Zambetti envisioned a project named Arduino.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    
+    <script>
+        function toggleChat() {
+            const chatbox = document.getElementById('chatbox');
+            const chatToggle = document.getElementById('chat-toggle');
+            const generateButton = document.getElementById('generate-button');
+
+            if (chatbox.style.display === 'none' || chatbox.style.display === '') {
+                chatbox.style.display = 'flex'; // Show chatbox
+                chatToggle.style.display = 'none'; // Hide toggle button
+                generateButton.style.display = 'none';
+            } else {
+                chatbox.style.display = 'none'; // Hide chatbox
+                chatToggle.style.display = 'block'; // Show toggle button
+                generateButton.style.display = 'block';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const imageUpload = document.getElementById('image-upload');
+            const message = input.value.trim();
+            const chatMessages = document.getElementById('chat-messages');
+
+            if (message) {
+                const userMessage = document.createElement('div');
+                userMessage.className = 'user-message';
+                userMessage.textContent = message;
+                chatMessages.appendChild(userMessage);
+                input.value = '';
+            }
+
+            if (imageUpload.files.length > 0) {
+                const file = imageUpload.files[0];
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = reader.result;
+                    const imageMessage = document.createElement('div');
+                    imageMessage.className = 'user-message user-image';
+                    imageMessage.appendChild(imgElement);
+                    chatMessages.appendChild(imageMessage);
+                    imageUpload.value = ''; // Reset file input
+                };
+                reader.readAsDataURL(file);
+            }
+
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+        }
+    </script>
+
+<script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+
+<!-- Additional JavaScript Files -->
+<script src="{{ url_for('static', filename='assets/js/isotope.min.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/owl-carousel.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/tabs.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/popup.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/custom.js') }}"></script>
+<script>
+    async function sendMessage() {
+        const inputField = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const pdfUpload = document.getElementById('pdf-upload');
+        const imageUpload = document.getElementById('image-upload');
+        const message = inputField.value.trim();
+        const generateButton = document.getElementById('generate-button');
+
+
+        // Display user message
+        if (message) {
+            const userMessage = document.createElement('div');
+            userMessage.className = 'user-message';
+            userMessage.textContent = message;
+            chatMessages.appendChild(userMessage);
+            inputField.value = '';
+        }
+
+        const formData = new FormData();
+        if (message) formData.append('query', message);
+
+        if (pdfUpload.files.length > 0) {
+            formData.append('pdf', pdfUpload.files[0]);
+        }
+
+        if (imageUpload.files.length > 0) {
+            Array.from(imageUpload.files).forEach((file, index) => {
+                formData.append(`image_${index}`, file);
+            });
+        }
+
+        // Send request to Flask server
+        try {
+            const response = await fetch('/rag-chat', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            const botMessage = document.createElement('div');
+            botMessage.className = 'bot-message';
+            botMessage.textContent = data.answer || data.error || "No response received.";
+            chatMessages.appendChild(botMessage);
+        } catch (err) {
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'bot-message';
+            errorMessage.textContent = `Error: ${err.message}`;
+            chatMessages.appendChild(errorMessage);
+        }
+
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+    }
+
+    function toggleChat() {
+        const chatbox = document.getElementById('chatbox');
+        const chatToggle = document.getElementById('chat-toggle');
+        const generateButton = document.getElementById('generate-button');
+
+
+        if (chatbox.style.display === 'none' || chatbox.style.display === '') {
+            chatbox.style.display = 'flex';
+            chatToggle.style.display = 'none';
+            generateButton.style.display = 'none';
+
+        } else {
+            chatbox.style.display = 'none';
+            chatToggle.style.display = 'block';
+            generateButton.style.display = 'block';
+
+        }
+    }
+</script>
+
+
+</body>
+
+</html>

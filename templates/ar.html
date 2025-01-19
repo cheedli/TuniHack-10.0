@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AUGMENTED REALITY</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <script>
+    AFRAME.registerComponent('universal-gesture-handler', {
+      schema: {
+        rotationFactor: {default: 5},
+        minScale: {default: 0.01},
+        maxScale: {default: 1000},
+        wheelZoomSpeed: {default: 8},
+        doubleTapThreshold: { default: 300 } // ms
+
+      },
+      init: function () {
+        const sceneEl = this.el.sceneEl;
+        this._activePointers = {};
+        
+        this._initialPinchDistance = null;
+        this._initialScale = 1;
+
+
+        this.onPointerDown = this.onPointerDown.bind(this);
+        this.onPointerMove = this.onPointerMove.bind(this);
+        this.onPointerUp = this.onPointerUp.bind(this);
+        this.onWheel = this.onWheel.bind(this);
+
+        sceneEl.canvas.addEventListener('pointerdown', this.onPointerDown);
+        sceneEl.canvas.addEventListener('pointermove', this.onPointerMove);
+        sceneEl.canvas.addEventListener('pointerup', this.onPointerUp);
+        sceneEl.canvas.addEventListener('pointercancel', this.onPointerUp);
+        sceneEl.canvas.addEventListener('wheel', this.onWheel, {passive: false});
+      },
+
+      remove: function () {
+        const sceneEl = this.el.sceneEl;
+        sceneEl.canvas.removeEventListener('pointerdown', this.onPointerDown);
+        sceneEl.canvas.removeEventListener('pointermove', this.onPointerMove);
+        sceneEl.canvas.removeEventListener('pointerup', this.onPointerUp);
+        sceneEl.canvas.removeEventListener('pointercancel', this.onPointerUp);
+        sceneEl.canvas.removeEventListener('wheel', this.onWheel);
+      },
+
+      onPointerDown: function (evt) {
+        this._activePointers[evt.pointerId] = {x: evt.clientX, y: evt.clientY, shiftKey: evt.shiftKey};
+      },
+
+      onPointerMove: function (evt) {
+        if (!this._activePointers[evt.pointerId]) return;
+
+        const oldPos = this._activePointers[evt.pointerId];
+        this._activePointers[evt.pointerId] = {x: evt.clientX, y: evt.clientY, shiftKey: evt.shiftKey};
+
+        const pointerIds = Object.keys(this._activePointers);
+
+        if (pointerIds.length === 2) {
+          const points = pointerIds.map(id => this._activePointers[id]);
+          const dist = this.getDistance(points[0], points[1]);
+          
+          if (!this._initialPinchDistance) {
+            this._initialPinchDistance = dist;
+            this._initialScale = this.el.object3D.scale.x;
+          } else {
+            let newScale = this._initialScale * (dist / this._initialPinchDistance);
+            newScale = Math.min(Math.max(newScale, this.data.minScale), this.data.maxScale);
+            this.el.object3D.scale.set(newScale, newScale, newScale);
+          }
+        } 
+        else if (pointerIds.length === 1) {
+          const dx = evt.clientX - oldPos.x;
+          const dy = evt.clientY - oldPos.y;
+          const rotation = this.el.object3D.rotation;
+
+          if (evt.shiftKey) {
+            rotation.z += dx * 0.01 * this.data.rotationFactor;
+          } 
+          else {
+            rotation.y += dx * 0.01 * this.data.rotationFactor;
+            rotation.x -= dy * 0.01 * this.data.rotationFactor; 
+          }
+        }
+      },
+
+      onPointerUp: function (evt) {
+        delete this._activePointers[evt.pointerId];
+        if (Object.keys(this._activePointers).length < 2) {
+          this._initialPinchDistance = null;
+          this._initialScale = this.el.object3D.scale.x;
+        }
+      },
+
+      onWheel: function (evt) {
+        evt.preventDefault();
+        let scale = this.el.object3D.scale.x;
+        scale -= (evt.deltaY * 0.001) * this.data.wheelZoomSpeed; // adjust speed
+        scale = Math.min(Math.max(scale, this.data.minScale), this.data.maxScale);
+        this.el.object3D.scale.set(scale, scale, scale);
+      },
+
+      getDistance: function (p1, p2) {
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        return Math.sqrt(dx*dx + dy*dy);
+      }
+    });
+  </script>
+
+  <style>
+    body { margin: 0; overflow: hidden; }
+    a-scene { width: 100%; height: 100vh; }
+  </style>
+</head>
+<body>
+    <a-scene
+      embedded
+      renderer="
+        logarithmicDepthBuffer: true;
+        colorManagement: true;      
+        physicallyCorrectLights: true; 
+      "
+      arjs="sourceType: webcam; debugUIEnabled: false; facingMode: environment;"
+    >
+     
+      <a-entity 
+        light="type: hemisphere; 
+               intensity: 10; 
+               color: #ffffff; 
+               groundColor: #aaaaaa">
+      </a-entity>
+      
+      <a-entity 
+        light="type: directional; 
+               intensity: 10; 
+               color: #ffffff" 
+        position="3 10 5">
+      </a-entity>
+      
+      <a-entity 
+        light="type: ambient; 
+               intensity: 10; 
+               color: #ffffff">
+      </a-entity>
+    
+      <a-marker preset="hiro">
+        <a-entity
+          gltf-model="{{ url_for('static', filename='models/arduino.glb') }}"
+          scale="2 2 2"
+          position="0 0 0"
+          rotation="0 0 0"
+          universal-gesture-handler
+        ></a-entity>
+    </a-marker>
+    
+          <a-entity camera></a-entity>
+    </a-scene>
+    </body>
+</html>

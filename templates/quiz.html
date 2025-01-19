@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        label, select, button {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .question {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quiz Generator</h1>
+        <label for="pdf-id">Enter PDF ID:</label>
+        <input type="number" id="pdf-id" min="1" placeholder="Enter PDF ID (e.g., 1)">
+        <button id="generate-quiz-btn">Generate Quiz</button>
+        <div id="quiz-container"></div>
+    </div>
+
+    <script>
+        document.getElementById("generate-quiz-btn").addEventListener("click", async () => {
+            const pdfId = document.getElementById("pdf-id").value;
+            const quizContainer = document.getElementById("quiz-container");
+            quizContainer.innerHTML = "";
+
+            if (!pdfId) {
+                quizContainer.innerHTML = "<p>Please enter a valid PDF ID.</p>";
+                return;
+            }
+
+            try {
+                const response = await fetch(`/generate_quiz/${pdfId}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch quiz data. Please check the PDF ID.");
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    quizContainer.innerHTML = `<p>Error: ${data.error}</p>`;
+                } else {
+                    const quizQuestions = data.quiz;
+                    if (quizQuestions.length === 0) {
+                        quizContainer.innerHTML = "<p>No quiz could be generated from the selected PDF.</p>";
+                    } else {
+                        quizQuestions.forEach((item, index) => {
+                            const questionElement = document.createElement("div");
+                            questionElement.classList.add("question");
+                            questionElement.innerHTML = `
+                                <p><strong>${item.question}</strong></p>
+                                <pre>${item.answers}</pre>
+                            `;
+                            quizContainer.appendChild(questionElement);
+                        });
+                    }
+                }
+            } catch (error) {
+                quizContainer.innerHTML = `<p>${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
