@@ -25,7 +25,7 @@ from PIL import Image
 import json
 from transformers import CLIPProcessor, CLIPModel, AutoTokenizer, AutoModel
 # Set your AssemblyAI key
-aai.settings.api_key = "d45eb71162fe42f38d8b629925e6ae00"
+aai.settings.api_key = "API_KEY"
 
 app = Flask(__name__)
 
@@ -450,7 +450,7 @@ except Exception as e:
     print(f"Failed to load FAISS vector store: {e}")
 
 # ---------- GOOGLE GENERATIVE AI MODEL ----------
-GOOGLE_API_KEY = 'AIzaSyB2rdT1ZfKXqwVlePKeXlcUxltduC9psDU'
+GOOGLE_API_KEY = 'GOOGLE_API_KEY'
 
 # ---------- RAG PIPELINE SETUP FOR PDF ----------
 llm_model = ChatGoogleGenerativeAI(
@@ -688,62 +688,7 @@ import json
 def generate_quiz(course_material: str, num_questions: int):
     """
     Generates quiz questions using Google GenAI, returning them as JSON.
-    If it fails or the model response is invalid, returns a random subset of the static fallback quiz.
     """
-
-    # 10 fallback questions
-    fallback_quiz_list = [
-        {
-            "question": "What is Arduino?",
-            "answers": ["A microcontroller board", "A programming language", "A video game", "A web browser"],
-            "correct_answer": "A microcontroller board"
-        },
-        {
-            "question": "Which language is primarily used to program Arduino?",
-            "answers": ["Python", "Java", "C/C++", "Ruby"],
-            "correct_answer": "C/C++"
-        },
-        {
-            "question": "Which company originally developed Arduino?",
-            "answers": ["Arduino LLC", "Microsoft", "Intel", "IBM"],
-            "correct_answer": "Arduino LLC"
-        },
-        {
-            "question": "Which of the following is NOT an Arduino board?",
-            "answers": ["Arduino Uno", "Arduino Mega", "Raspberry Pi", "Arduino Nano"],
-            "correct_answer": "Raspberry Pi"
-        },
-        {
-            "question": "Arduino's default programming language is based on?",
-            "answers": ["Visual Basic", "Swift", "C/C++", "Assembly"],
-            "correct_answer": "C/C++"
-        },
-        {
-            "question": "What is the typical operating voltage of an Arduino Uno?",
-            "answers": ["3.3V", "5V", "12V", "9V"],
-            "correct_answer": "5V"
-        },
-        {
-            "question": "In Arduino IDE, the function that runs once at startup is?",
-            "answers": ["setup()", "loop()", "main()", "init()"],
-            "correct_answer": "setup()"
-        },
-        {
-            "question": "Which method is repeatedly executed in an Arduino program?",
-            "answers": ["setup()", "loop()", "run()", "start()"],
-            "correct_answer": "loop()"
-        },
-        {
-            "question": "How can you power an Arduino Uno board?",
-            "answers": ["USB", "Barrel jack", "VIN pin", "All of the above"],
-            "correct_answer": "All of the above"
-        },
-        {
-            "question": "Which communication protocol does Arduino often use to upload code?",
-            "answers": ["HTTP", "ISP (In-System Programming)", "SPI", "TCP/IP"],
-            "correct_answer": "ISP (In-System Programming)"
-        }
-    ]
 
     try:
         prompt = f"""
@@ -781,8 +726,7 @@ def generate_quiz(course_material: str, num_questions: int):
 
     except Exception as e:
         print(f"Error generating quiz: {e}\nReturning a static fallback quiz.")
-        # Pick 5 random questions from the fallback list
-        return random.sample(fallback_quiz_list, 5)
+
 
 @app.route('/generate-quiz', methods=['GET'])
 def generate_quiz_route():
