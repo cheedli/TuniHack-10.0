@@ -1,17 +1,29 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import ollama
+from PyPDF2 import PdfReader
+
 import fitz  # PyMuPDF for PDF processing
 from sentence_transformers import SentenceTransformer
 import faiss  # FAISS for vector storage
 import numpy as np
-
 import subprocess
 import edge_tts
 import asyncio
 import assemblyai as aai
 import requests  # for sending files to Colab
-
+import torch
+from werkzeug.utils import secure_filename
+import google.generativeai as genai
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import PromptTemplate
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.chains import LLMChain
+import fitz  # PyMuPDF
+from PIL import Image
+import json
+from transformers import CLIPProcessor, CLIPModel, AutoTokenizer, AutoModel
 # Set your AssemblyAI key
 aai.settings.api_key = "d45eb71162fe42f38d8b629925e6ae00"
 
@@ -20,26 +32,6 @@ app = Flask(__name__)
 ###############################################################################
 # (A) OCR Functions
 ###############################################################################
-def extract_text_from_image(image_path):
-    """
-    Uses an OCR model (via Ollama) to extract text from an uploaded image.
-    """
-    prompt_template = {
-        "model": "minicpm-v",
-        "messages": [
-            {
-                "role": "user",
-                "content": (
-                    "Please describe the math-related content in this image, ensuring that any LaTeX formulas "
-                    "are correctly transcribed. Non-mathematical details do not need to be described. "
-                    "Transcript all the mathematical expressions."
-                ),
-                "images": [image_path]
-            }
-        ]
-    }
-    response = ollama.chat(**prompt_template)
-    return response["message"]["content"]
 
 @app.route("/")
 def index():
@@ -61,6 +53,10 @@ def quiz():
 @app.route("/pricing")
 def pricing():
     return render_template("pricing.html")
+
+@app.route("/3d")
+def render3d():
+    return render_template("3d.html")
 
 
 ###############################################################################
@@ -336,7 +332,7 @@ def generate_speech():
         if uploaded_image and uploaded_image.filename:
             image_path = os.path.join("static", "uploads", uploaded_image.filename)
             uploaded_image.save(image_path)
-            image_text = extract_text_from_image(image_path)
+            image_text = image_path
             print("DEBUG: Image extracted text length:", len(image_text))
 
         # Step 2: Build Ollama prompt => speech.txt
@@ -444,66 +440,400 @@ def generate_speech():
         import traceback
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
+embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
+vector_db_path = "vector_db_dir"
+try:
+    vectordb = FAISS.load_local(vector_db_path, embeddings, allow_dangerous_deserialization=True)
+    print("FAISS vector store loaded successfully.")
+except Exception as e:
+    vectordb = None
+    print(f"Failed to load FAISS vector store: {e}")
+
+# ---------- GOOGLE GENERATIVE AI MODEL ----------
+GOOGLE_API_KEY = 'AIzaSyB2rdT1ZfKXqwVlePKeXlcUxltduC9psDU'
+
+# ---------- RAG PIPELINE SETUP FOR PDF ----------
+llm_model = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    google_api_key=GOOGLE_API_KEY,
+    temperature=0.2,
+)
+
+tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+text_model = AutoModel.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+
+clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+dimension = 512  # Embedding size for CLIP
+index = faiss.IndexFlatL2(dimension)
+data_store = []  # Store metadata: (description, image_path)
+
+def extract_images_and_text(pdf_path, output_folder):
+    """Extract text + images from each page of a PDF."""
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    pdf_document = fitz.open(pdf_path)
+    extracted_data = []
+    for page_number in range(len(pdf_document)):
+        page = pdf_document[page_number]
+        text = page.get_text().strip()
+        images = page.get_images(full=True)
+        for i, img in enumerate(images):
+            xref = img[0]
+            base_image = pdf_document.extract_image(xref)
+            image_bytes = base_image["image"]
+            image_filename = os.path.join(output_folder, f"page_{page_number+1}_image_{i+1}.png")
+            with open(image_filename, "wb") as image_file:
+                image_file.write(image_bytes)
+            extracted_data.append({"image_path": image_filename, "description": text})
+    pdf_document.close()
+    return extracted_data
+
+def vectorize_image(image_path):
+    image = Image.open(image_path)
+    inputs = clip_processor(images=image, return_tensors="pt")
+    embedding = clip_model.get_image_features(**inputs)
+    return embedding.detach().numpy().flatten()
+
+def vectorize_text(texts):
+    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True)
+    embeddings = text_model(**inputs).last_hidden_state.mean(dim=1)
+    return embeddings.detach().numpy()
+def retrieve_top_k(input_image_path, query, k=1):
+    """
+    Retrieve top-k relevant images and text from FAISS.
+    Handles cases where the image path is None (text-only query) or the query is missing.
+    """
+    try:
+        results = []
+
+        # If an image is provided, vectorize and search by image embedding
+        if input_image_path:
+            input_image_embedding = vectorize_image(input_image_path)
+            distances, indices = index.search(input_image_embedding.reshape(1, -1), k)
+            results = [data_store[i] for i in indices[0]]
+        else:
+            # If no image is provided, initialize an empty results list
+            results = [{"description": ""}]  # Add placeholder to handle text queries
+
+        # If a text query is provided, reorder results by text similarity
+        if query:
+            if results and results[0]["description"]:  # Only if results contain descriptions
+                text_embeddings = vectorize_text([r["description"] for r in results])
+                query_embedding = vectorize_text([query])
+                text_similarities = torch.cosine_similarity(
+                    torch.tensor(text_embeddings),
+                    torch.tensor(query_embedding),
+                    dim=1
+                )
+                sorted_indices = torch.argsort(text_similarities, descending=True)
+                results = [results[i] for i in sorted_indices]
+
+        return results[:k]  # Return top-k results after sorting
+
+    except Exception as e:
+        print(f"Error in retrieve_top_k: {e}")
+        return []
+
+def generate_answerr(input_image_path, input_question):
+    """
+    Full RAG pipeline: retrieve + LLM answer.
+    Handles optional image and processes based on available inputs.
+    """
+    # Validate question input
+    if not input_question:
+        return "No question provided. Please provide a question to proceed."
+
+    try:
+        # Initialize context variable
+        context = ""
+
+        # If image is provided, retrieve context using the image and question
+        if input_image_path:
+            top_matches = retrieve_top_k(input_image_path, input_question, k=1)
+            if top_matches and top_matches[0].get("description"):
+                context = top_matches[0]["description"]
+            else:
+                return "No relevant information found for the provided image and question."
+        else:
+                # Define the prompt template
+            prompt_template = """
+            You are an expert in explaining things. you need to be 100percent correct  you are a chatbot helping adults in a non formel way so you nee to know how to explain
+            
+            Answer the following question:
+            Question: {question}
+            
+            Please respond concisely.
+            """
+
+            # Create a LangChain prompt template
+            prompt_template_langchain = PromptTemplate.from_template(prompt_template)
+
+            # Create a chain with the LLM model
+            qa_chain = LLMChain(llm=llm_model, prompt=prompt_template_langchain)
+
+            # Run the chain with context and question
+            response = qa_chain.run({"context": context, "question": input_question})
+
+            return response.strip()
+
+        # Define the prompt template
+        prompt_template = """
+                    You are an expert in explaining things. you need to be 100percent correct  you are a chatbot helping adults in a non formel way so you nee to know how to explain
+. Based on the provided context:
+        {context}
+        
+        Answer the following question:
+        Question: {question}
+        
+        Please respond concisely.
+        """
+
+        # Create a LangChain prompt template
+        prompt_template_langchain = PromptTemplate.from_template(prompt_template)
+
+        # Create a chain with the LLM model
+        qa_chain = LLMChain(llm=llm_model, prompt=prompt_template_langchain)
+
+        # Run the chain with context and question
+        response = qa_chain.run({"context": context, "question": input_question})
+
+        return response.strip()
+
+    except Exception as e:
+        # Log the error for debugging and return a user-friendly error message
+        print(f"Error in generate_answerr: {e}")
+        return "An error occurred while processing your request. Please try again later."
+
+def initialize_pipeline(pdf_path, output_folder):
+    """Extract data from PDF and load into FAISS index once."""
+    print("Extraction des données...")
+    extracted_data = extract_images_and_text(pdf_path, output_folder)
+    print("Vectorisation des images...")
+    for entry in extracted_data:
+        image_embedding = vectorize_image(entry["image_path"])
+        index.add(image_embedding.reshape(1, -1))
+        data_store.append(entry)
+
+import os
+
+# Define upload folder
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')  # Create an 'uploads' directory in the current working directory
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)  # Create the folder if it doesn't exist
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
+@app.route('/pdf-question', methods=['POST'])
+def pdf_question():
+    """
+    Receives form data:
+      - 'text': user question (string)
+      - 'image': user uploaded image (optional)
+    Returns: JSON { "response": "Answer from LLM" }
+    """
+    try:
+        # Get the question from the form data
+        question = request.form.get("text", "").strip()
+        image_file = request.files.get("image")
+
+        # Ensure a question is provided
+        if not question:
+            return jsonify({"error": "No question provided."}), 400
+
+        # If an image is provided, save and process it
+        if image_file:
+            filename = secure_filename(image_file.filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image_file.save(upload_path)
+            # Call your function to handle the image and question
+            answer = generate_answerr(upload_path, question)
+        else:
+            # Handle the case where only the question is provided
+            answer = generate_answerr(None, question)
+
+        # Return the response
+        return jsonify({"response": answer}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error during PDF question route: {e}")
+        return jsonify({
+            "error": "An error occurred during PDF question processing.",
+            "details": str(e)
+        }), 500
+
+PDF_PATH = "Arduino .pdf"
+MAX_QUIZZES = 5
+QUESTIONS_PER_QUIZ = 3
+
+def extract_text_from_pdf(pdf_path: str) -> str:
+    """
+    Extract text content from a PDF file.
+    """
+    try:
+        reader = PdfReader(pdf_path)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() or ""
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting text from PDF: {e}")
+        return ""
+
 import random
-import re
-def simplify_text(text):
-    """ Simplifies the text to remove less essential parts for concise questions. """
-    text = re.sub(r'\(.*?\)', '', text)
-    text = re.sub(r'[\r\n]+', ' ', text).strip()
-    text = re.sub(r'^[^a-zA-Z0-9]*|[^a-zA-Z0-9]*$', '', text)
-    return text
+import json
 
-def generate_key_phrase(chunk):
-    """ Extracts a concise key phrase from a chunk of text for question generation. """
-    sentences = chunk.split('.')
-    for sentence in sentences:
-        if 10 < len(sentence.split()) < 30:  # Suitable sentence length
-            return sentence.strip()
-    return "specific content"
+def generate_quiz(course_material: str, num_questions: int):
+    """
+    Generates quiz questions using Google GenAI, returning them as JSON.
+    If it fails or the model response is invalid, returns a random subset of the static fallback quiz.
+    """
 
+    # 10 fallback questions
+    fallback_quiz_list = [
+        {
+            "question": "What is Arduino?",
+            "answers": ["A microcontroller board", "A programming language", "A video game", "A web browser"],
+            "correct_answer": "A microcontroller board"
+        },
+        {
+            "question": "Which language is primarily used to program Arduino?",
+            "answers": ["Python", "Java", "C/C++", "Ruby"],
+            "correct_answer": "C/C++"
+        },
+        {
+            "question": "Which company originally developed Arduino?",
+            "answers": ["Arduino LLC", "Microsoft", "Intel", "IBM"],
+            "correct_answer": "Arduino LLC"
+        },
+        {
+            "question": "Which of the following is NOT an Arduino board?",
+            "answers": ["Arduino Uno", "Arduino Mega", "Raspberry Pi", "Arduino Nano"],
+            "correct_answer": "Raspberry Pi"
+        },
+        {
+            "question": "Arduino's default programming language is based on?",
+            "answers": ["Visual Basic", "Swift", "C/C++", "Assembly"],
+            "correct_answer": "C/C++"
+        },
+        {
+            "question": "What is the typical operating voltage of an Arduino Uno?",
+            "answers": ["3.3V", "5V", "12V", "9V"],
+            "correct_answer": "5V"
+        },
+        {
+            "question": "In Arduino IDE, the function that runs once at startup is?",
+            "answers": ["setup()", "loop()", "main()", "init()"],
+            "correct_answer": "setup()"
+        },
+        {
+            "question": "Which method is repeatedly executed in an Arduino program?",
+            "answers": ["setup()", "loop()", "run()", "start()"],
+            "correct_answer": "loop()"
+        },
+        {
+            "question": "How can you power an Arduino Uno board?",
+            "answers": ["USB", "Barrel jack", "VIN pin", "All of the above"],
+            "correct_answer": "All of the above"
+        },
+        {
+            "question": "Which communication protocol does Arduino often use to upload code?",
+            "answers": ["HTTP", "ISP (In-System Programming)", "SPI", "TCP/IP"],
+            "correct_answer": "ISP (In-System Programming)"
+        }
+    ]
 
-def generate_quiz_from_pdf(pdf_chunks: list) -> list:
-    questions = []
-    correct_answers = []
-    total_questions = min(10, len(pdf_chunks))
-    if total_questions == 0:
-        return ["Not enough content in the PDF to generate questions."]
+    try:
+        prompt = f"""
+        You are a quiz generator. Respond ONLY with valid JSON, no extra text.
+        Generate {num_questions} multiple-choice questions from the material below.
 
-    chunk_sample = random.sample(pdf_chunks, total_questions)
-    
-    for i, chunk in enumerate(chunk_sample):
-        simplified_chunk = simplify_text(chunk)
-        key_phrase = generate_key_phrase(simplified_chunk)
-        question = f"Q{i+1}: Describe the role or purpose of '{key_phrase}'?"
-        correct_answer = f"The role or purpose is {key_phrase}."
-        distractors = create_distractors(pdf_chunks, chunk)
-        all_answers = [correct_answer] + distractors
-        random.shuffle(all_answers)  # Shuffle to place the correct answer randomly among the options
-        formatted_answers = "\n".join([f"({chr(65 + j)}) {answer}" for j, answer in enumerate(all_answers)])
-        questions.append({"question": question, "answers": formatted_answers})
-        correct_answers.append(f"Correct Answer for Q{i+1}: {correct_answer}")
+        Each question must have:
+        - "question": string
+        - "answers": array of exactly 4 strings
+        - "correct_answer": one string from the answers
 
-    # Print all correct answers in the terminal
-    for answer in correct_answers:
-        print(answer)
+        Course Material:
+        {course_material}
 
-    return questions
+        Your entire response must be valid JSON in the format:
+        [
+            {{
+                "question": "Question text",
+                "answers": ["A", "B", "C", "D"],
+                "correct_answer": "A"
+            }},
+            ...
+        ]
+        """
 
-def create_distractors(pdf_chunks, correct_answer):
-    """ Generates two incorrect answers from the list of chunks, ensuring they differ from the correct answer. """
-    distractors = random.sample([chunk for chunk in pdf_chunks if chunk != correct_answer], 2)
-    return [simplify_text(distractor.split('.')[0]) for distractor in distractors]
+        response = llm_model.invoke(prompt)
+        response_content = response.content.strip()
 
-# Route to handle quiz generation requests
-@app.route("/generate_quiz/<int:pdf_id>", methods=["GET"])
-def handle_quiz_request(pdf_id):
-    if pdf_id < 1 or pdf_id > len(static_pdf_chunks):
-        return jsonify({"error": "Invalid PDF ID"}), 404
-    
-    quiz_questions = generate_quiz_from_pdf(static_pdf_chunks[pdf_id-1])
-    return jsonify({"quiz": quiz_questions})
+        if not response_content:
+            raise ValueError("No content received from the LLM.")
 
+        # Attempt to parse LLM JSON
+        quiz_data = json.loads(response_content)
+        return quiz_data
+
+    except Exception as e:
+        print(f"Error generating quiz: {e}\nReturning a static fallback quiz.")
+        # Pick 5 random questions from the fallback list
+        return random.sample(fallback_quiz_list, 5)
+
+@app.route('/generate-quiz', methods=['GET'])
+def generate_quiz_route():
+    """
+    Generates multiple quizzes (each with a defined number of questions) from the embedded PDF.
+    """
+    try:
+        # Extract text from PDF
+        course_material = extract_text_from_pdf(PDF_PATH)
+        if not course_material:
+            return jsonify({"error": "Failed to extract course material from the PDF."}), 500
+
+        # Create several quizzes
+        quizzes = []
+        for _ in range(MAX_QUIZZES):
+            quiz = generate_quiz(course_material, QUESTIONS_PER_QUIZ)
+            quizzes.append(quiz)
+
+        return jsonify({"quizzes": quizzes}), 200
+    except Exception as e:
+        app.logger.error(f"Error during quiz generation: {e}")
+        return jsonify({"error": "An error occurred during quiz generation.", "details": str(e)}), 500
+
+@app.route('/submit-quiz', methods=['POST'])
+def submit_quiz():
+  
+    try:
+        data = request.get_json()
+        quiz = data.get("quiz", [])
+        user_answers = data.get("answers", [])
+
+        if not quiz or not user_answers:
+            return jsonify({"error": "Quiz or answers missing in the request."}), 400
+
+        # Calculate the score
+        score = 0
+        for idx, question in enumerate(quiz):
+            if idx < len(user_answers) and question["correct_answer"] == user_answers[idx]:
+                score += 1
+
+        return jsonify({
+            "score": score,
+            "total": len(quiz),
+            "correct_answers": [q["correct_answer"] for q in quiz]
+        }), 200
+    except Exception as e:
+        app.logger.error(f"Error during quiz submission: {e}")
+        return jsonify({"error": "An error occurred while calculating the score.", "details": str(e)}), 500
 
 if __name__ == "__main__":
     load_static_pdfs()
+    initialize_pipeline("Arduino .pdf", "images_extraites")
+
     app.run(debug=True)

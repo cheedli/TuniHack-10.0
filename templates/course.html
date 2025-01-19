@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/owl.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/animate.css') }}">
   <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css" />
+  <link href="{{ url_for('static', filename='vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
 </head>
 
 </head>
@@ -347,28 +349,490 @@
 
    
     
-    <div class="contact-us section" id="contact">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="contact-us-content" style="position: relative;">
-                        <div class="row">
-                            <div class="course-content" id="course-content">
-                                <!-- Generate Video Button -->
-                                <button class="generate-button" id="generate-button">Generate Video</button>
-                                <h1>EM: Arduino</h1>
-                                <p>
-                                    A team of developers consisting of Massimo Banzi, David Cuartielles, Tom Igoe, Gianluca Martino, David Mellis,
-                                    and Nicholas Zambetti envisioned a project named Arduino.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="contact-us section" id="contact">
+          <div class="container">
+              <div class="row">
+                  <div class="col-lg-12">
+                      <div class="contact-us-content" style="position: relative;">
+                          <div class="row">
+                              <div class="course-content" id="course-content">
+                                  <!-- Generate Video Button -->
+                                  <button class="generate-button" id="generate-button">Generate Video</button>
+                                  <h1>Introduction</h1>
+  
+                                  <p>
+                                      A team of developers consisting of Massimo Banzi, David Cuartielles, Tom Igoe, Gianluca Martino,
+                                      David Mellis, and Nicholas Zambetti envisioned a project named <b>Arduino</b>.
+                                      This project introduced a small programmable electronic board and cross-platform software, designed
+                                      to be accessible to everyone, making it easy to create electronic systems. Since there may be
+                                      beginners among us, let’s start by exploring some common terminology related to electronics and
+                                      computing.
+                                  </p>
+  
+                                  <br>
+                                  <br>
+  <h5>An Electronic Board</h5>
+  
+  <p>An electronic board is a flat, flexible, or rigid base, typically made of epoxy or fiberglass. It features
+      electrical traces arranged on one, two, or multiple layers (on the surface and/or internally), which
+      enable electrical connections between electronic components. Each trace links specific components
+      to one another to create a functional electronic system capable of performing the intended operations</p>
+  
+  <br>
+  <br>
+      <h5>What is Arduino?</h5>
+  
+  <br>
+  
+      <p>Arduino is an open-source electronics platform designed to make it easier to create interactive
+          projects by combining hardware and software. It is built around microcontroller boards that can read
+          inputs—such as a light detected by a sensor or a finger pressing a button—and convert them into
+          outputs, like turning on an LED or activating a motor. Arduino is widely used for prototyping,
+          education, and developing real-world applications.
+      </p>
+      <a href="https://www.arduino.cc" target="_blank">Arduino website</a>.
+  
+  <br>
+  <br>
+      <h6>Use Cases of Arduino :</h6>
+      <p>Arduino's versatility makes it applicable in various fields:</p>
+      <ul>
+          <li>
+              <strong>- Home Automation:</strong> Automate tasks like controlling lights, security systems, or appliances.
+              <div class="example">Example: A smart thermostat to regulate room temperature.</div>
+          </li>
+          <li>
+              <strong>- Education:</strong> Arduino is used in schools and universities to teach programming, electronics, and robotics.
+              <div class="example">Example: Building simple robots or creating simulations of physical systems.</div>
+          </li>
+          <li>
+              <strong>- Agriculture:</strong> Implement systems for soil moisture monitoring, irrigation control, or crop surveillance.
+              <div class="example">Example: Automated irrigation systems based on soil moisture levels.</div>
+          </li>
+          <li>
+              <strong>- Healthcare:</strong> Develop devices for patient monitoring, rehabilitation, or health diagnostics.
+              <div class="example">Example: Pulse oximeters and wearable health trackers.</div>
+          </li>
+          <li>
+              <strong>- Creative Arts:</strong> Use Arduino for interactive installations, musical instruments, and light displays.
+              <div class="example">Example: LED-based art installations.</div>
+          </li>
+      </ul>
+  
+  
+      <h1>Arduino models</h1>
+      <table>
+          <tr>
+              <td> <a href="https://store.arduino.cc/products/uno-r4-wifi?queryID=bae2825ea37c8fee2c9a5378de4437c4" target="_blank">Arduino UNO</a></td>
+              <td><img src="{{ url_for('static', filename='assets/images/uno.jpg') }}" alt="Image 1"></td>
+          </tr>
+          <tr>
+              <td><a href="https://store.arduino.cc/products/arduino-zero" target="_blank">Arduino Zero</a></td>
+  
+              <td><img src="{{ url_for('static', filename='assets/images/Zero.jpg') }}" alt="Image 2"></td>
+          </tr>
+  
+          <tr> 
+              <td><a href="https://store.arduino.cc/products/arduino-leonardo-with-headers" target="_blank">Arduino Leonardo</a></td>
+              <td><img src="{{ url_for('static', filename='assets/images/leonardo.png') }}" alt="Image 3"></td>
+          </tr>
+          <tr>
+              <td><a href="https://store.arduino.cc/products/arduino-micro" target="_blank">Arduino Micro</a></td>
+  
+              <td><img src="{{ url_for('static', filename='assets/images/micro.png') }}" alt="Image 4"></td>
+          </tr>
+      </table>
+  
+  <br>
+  <br>
+      <h1>Arduino UNO Specifications</h1>
+  <p>The Arduino Uno is one of the most popular microcontroller boards in the Arduino ecosystem. It is
+      designed to be user-friendly and versatile, making it an excellent choice for beginners and
+      experienced developers alike.
+      </p>
+  
+     <h6> Physical Overview</h6>
+  
+  
+     <ul>
+         <li><strong>1. Dimensions:</strong> The Arduino Uno board measures approximately 68.6 mm x 53.4 mm (2.7 x 2.1 inches), making it compact and easy to integrate into projects.</li>
+         <li><strong>2. Build Material:</strong> The board is made of durable printed circuit board (PCB) material with electronic components soldered onto it.</li>
+         <li><strong>3. Connectivity:</strong> Features a USB Type-B connector and a DC power jack for power input.</li>
+     </ul>
+     <a href="https://www.arduino.cc" target="_blank">Check the Source for more informations  </a>.
+  
+  
+     <br>
+     <br>
+     <br>
+  
+     <br>
+     
+        
+  <h3>Components and Features</h3>
+  
+  <ul>
+      <li><strong>1. Microcontroller:</strong>
+          <ul>
+              <li>The Arduino Uno is powered by the ATmega328P microcontroller.</li>
+              <li>It operates at a clock speed of 16 MHz and features:
+                  <ul>
+                      <li>32 KB of flash memory (program storage).</li>
+                      <li>2 KB of SRAM (runtime data storage).</li>
+                      <li>1 KB of EEPROM (non-volatile memory).</li>
+                  </ul>
+              </li>
+              <li>It processes inputs and generates outputs based on programmed instructions.</li>
+          </ul>
+      </li>
+      <li><strong>2. Digital I/O Pins:</strong>
+          <ul>
+              <li>The board has 14 digital input/output pins, numbered 0 to 13.</li>
+              <li>Six of these pins (3, 5, 6, 9, 10, 11) support PWM (Pulse Width Modulation) output, useful for controlling motors and LEDs.</li>
+          </ul>
+      </li>
+      <li><strong>3. Analog Input Pins:</strong>
+          <ul>
+              <li>Six analog pins (A0 to A5) allow the board to read varying voltage levels from sensors.</li>
+              <li>The analog-to-digital converter (ADC) converts these inputs into 10-bit digital values (0 to 1023).</li>
+          </ul>
+      </li>
+      <li><strong>4. USB Connector:</strong>
+          <ul>
+              <li>A standard USB Type-B port connects the Arduino Uno to a power source or a computer for power and serial communication.</li>
+          </ul>
+      </li>
+      <li><strong>5. Power Jack:</strong>
+          <ul>
+              <li>The barrel jack allows for an external power supply, with recommended voltage between 7-12V.</li>
+              <li>Includes an onboard voltage regulator to ensure stable 5V and 3.3V outputs.</li>
+          </ul>
+      </li>
+      <li><strong>6. Reset Button:</strong>
+          <ul>
+              <li>A small push button resets the microcontroller, restarting the program execution from the beginning.</li>
+          </ul>
+      </li>
+      <li><strong>7. Oscillator:</strong>
+          <ul>
+              <li>A 16 MHz crystal oscillator ensures precise timing for operations.</li>
+          </ul>
+      </li>
+      <li><strong>8. LED Indicators:</strong>
+          <ul>
+              <li>A "Power" LED indicates the board is receiving power.</li>
+              <li>Pin 13 has a built-in LED for basic testing and debugging.</li>
+              <li>RX and TX LEDs show data transmission and reception activity.</li>
+          </ul>
+      </li>
+      <li><strong>9. ICSP Header:</strong>
+          <ul>
+              <li>The In-Circuit Serial Programming (ICSP) header allows for low-level programming of the microcontroller.</li>
+          </ul>
+      </li>
+  </ul>
+  <a href="https://www.arduino.cc" target="_blank">Check the Source for more informations  </a>.
+  
+  
+  <br>
+  <br>
+  <br>
+  
+  <br>
+  <br>
+  
+  
+  
+  
+  <h3>Arduino Electrical Characteristics and Advantages</h3>
+  <ul>
+      <li><strong>Electrical Characteristics:</strong>
+          <ul>
+              <li>Operating Voltage: 5V.</li>
+              <li>Input Voltage (Recommended): 7-12V.</li>
+              <li>Maximum Current (per I/O pin): 40 mA.</li>
+          </ul>
+      </li>
+  
+      <br>
+  
+      <li><strong>Advantages:</strong>
+          <ul>
+              <li><strong>1. Simplicity:</strong> The Arduino Uno’s straightforward design makes it accessible to beginners.</li>
+              <li><strong>2. Expandability:</strong> Compatible with shields (add-on boards) to enhance functionality.</li>
+              <li><strong>3. Reliability:</strong> Built with robust components, ensuring durability for long-term use.</li>
+          </ul>
+      </li>
+  </ul>
+  
+  
+  <a href="https://www.arduino.cc" target="_blank">Check the Source for more informations  </a>.
+  
+  
+  
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  
+  
+  <h3>Components of an Arduino  UNO Board </h3>
+  
+  <ul>
+      <li><strong>1. Microcontroller:</strong>
+          <ul>
+              <li>The "brain" of the board, responsible for executing the instructions written in code. Common microcontrollers include the ATmega328P (used in Arduino Uno) and ARM Cortex processors (in advanced boards).</li>
+              <li><strong>Features:</strong> Built-in memory (flash, SRAM), processing speed (16 MHz for ATmega328P), and I/O pin management.</li>
+              <li><strong>Function:</strong> Controls operations based on the uploaded program and manages input/output.</li>
+              <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Microchip ATmega328P Datasheet</a></li>
+          </ul>
+      </li>
+      <li><strong>2. Digital I/O Pins:</strong>
+          <ul>
+              <li>Typically 14 pins (on Arduino Uno), configurable as input or output.</li>
+              <li><strong>Input Example:</strong> Detecting button presses or reading signals from a digital sensor.</li>
+              <li><strong>Output Example:</strong> Driving LEDs or controlling a relay.</li>
+              <li><strong>Special Pins:</strong> Some pins have PWM (Pulse Width Modulation) capability for simulating analog signals.</li>
+              <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Arduino Uno Technical Specifications</a></li>
+          </ul>
+      </li>
+      <li><strong>3. Analog Input Pins:</strong>
+          <ul>
+              <li>Typically 6 pins (on Arduino Uno) used for reading continuous signals, such as temperature or light intensity.</li>
+              <li><strong>Function:</strong> Converts varying voltage levels into digital values using a 10-bit Analog-to-Digital Converter (ADC), offering 1024 distinct levels.</li>
+              <li><strong>Use Case:</strong> Reading data from potentiometers or analog sensors.</li>
+              <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Arduino Documentation</a></li>
+          </ul>
+      </li>
+      
+      <ul>
+          <li><strong>4. USB Port:</strong>
+              <ul>
+                  <li><strong>Function:</strong> Enables communication between the Arduino and a computer for uploading programs and serial communication.</li>
+                  <li><strong>Power Supply:</strong> Provides power (5V) to the board during development.</li>
+                  <li><strong>Communication:</strong> Acts as a serial interface (via USB-to-UART bridge).</li>
+                  <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Arduino Guide</a></li>
+              </ul>
+          </li>
+          <li><strong>5. Power Jack:</strong>
+              <ul>
+                  <li><strong>Function:</strong> Allows the Arduino to run independently of a computer by connecting to an external power source.</li>
+                  <li><strong>Voltage Range:</strong> Typically accepts 7-12V DC, regulated internally to 5V.</li>
+                  <li><strong>Use Case:</strong> Running long-term projects without a USB connection.</li>
+                  <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Arduino Uno Datasheet</a></li>
+              </ul>
+          </li>
+          <li><strong>6. Reset Button:</strong>
+              <ul>
+                  <li><strong>Function:</strong> Resets the microcontroller, restarting the uploaded program from the beginning.</li>
+                  <li><strong>Use Case:</strong> Useful during debugging or to reinitialize a program.</li>
+                  <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Arduino Uno Manual</a></li>
+              </ul>
+          </li>
+          <li><strong>7. Voltage Regulators:</strong>
+              <ul>
+                  <li><strong>Function:</strong> Stabilizes incoming power, ensuring the microcontroller and other components receive a steady 5V or 3.3V.</li>
+                  <li><strong>Features:</strong> Protects against voltage fluctuations from external power supplies.</li>
+                  <li><strong>Importance:</strong> Prevents damage to sensitive electronics.</li>
+                  <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Arduino Documentation</a></li>
+              </ul>
+          </li>
+          <li><strong>8. Crystal Oscillator:</strong>
+              <ul>
+                  <li><strong>Function:</strong> Provides a stable clock signal for the microcontroller to operate accurately.</li>
+                  <li><strong>Frequency:</strong> Typically 16 MHz on Arduino Uno boards.</li>
+                  <li><strong>Use Case:</strong> Ensures precise timing for operations and synchronization.</li>
+                  <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Arduino Technical Details</a></li>
+              </ul>
+          </li>
+          <li><strong>9. LED Indicators:</strong>
+              <ul>
+                  <li><strong>Types:</strong> Power LED (indicates the board is powered), TX/RX LEDs (show serial communication activity), and a built-in LED on pin 13 for testing.</li>
+                  <li><strong>Use Case:</strong> Helps monitor board status and debug simple programs.</li>
+                  <li><strong>Source:</strong> <a href="https://www.arduino.cc" target="_blank">Arduino Guide</a></li>
+              </ul>
+          </li>
+      </ul>
+  
+  <br>
+  <br>
+  <br>
+  <br>
+  
+  <h3>Key Features of Arduino Boards</h3>
+  
+  
+      <ul>
+          <li><strong>Open Source:</strong> Arduino's hardware and software designs are freely available. <a href="https://www.arduino.cc" target="_blank">Source</a></li>
+          <li><strong>Cross-Platform:</strong> Compatible with Windows, macOS, and Linux. <a href="https://www.arduino.cc" target="_blank">Source</a></li>
+          <li><strong>Extensive Library Support:</strong> Numerous libraries simplify coding. <a href="https://www.arduino.cc" target="_blank">Source</a></li>
+          <li><strong>Community Support:</strong> A large global community provides tutorials, troubleshooting, and project inspiration. <a href="https://www.arduino.cc" target="_blank">Source</a></li>
+      </ul>
+      
+  <br>
+  <br>
+  <br>
+  <br>
+  
+  <h3>Let's have some fun with Arduino uno card !</h3>
+  <h3>We provide a very unique experience using AR </h3>
+  <h3> So please ,Scan this code to get started !</h3>
+  
+  <img src="{{ url_for('static', filename='assets/images/hiro.png') }}" alt="Image 4" style="width: 300px; height: auto;">
+  
+      <ul>
+          <li><strong>Open Source:</strong> Arduino's hardware and software designs are freely available. <a href="https://www.arduino.cc" target="_blank">Source</a></li>
+          <li><strong>Cross-Platform:</strong> Compatible with Windows, macOS, and Linux. <a href="https://www.arduino.cc" target="_blank">Source</a></li>
+          <li><strong>Extensive Library Support:</strong> Numerous libraries simplify coding. <a href="https://www.arduino.cc" target="_blank">Source</a></li>
+          <li><strong>Community Support:</strong> A large global community provides tutorials, troubleshooting, and project inspiration. <a href="https://www.arduino.cc" target="_blank">Source</a></li>
+      </ul>
+  
+  
+  
+  
+  
+  <br>
+  <br>
+  
+      <h2>Arduino IDE</h2>
+      <p>The Arduino Integrated Development Environment (IDE) is an open-source software platform designed to simplify the development and deployment of programs for Arduino boards. It provides an intuitive interface where users can write, edit, and debug code, which is referred to as a "sketch." The IDE includes tools for verifying and compiling code, as well as uploading it to the connected Arduino hardware. With built-in libraries, examples, and a wide range of supported boards, the Arduino IDE is beginner-friendly while offering advanced features for experienced developers. Compatible with Windows, macOS, and Linux, it plays a crucial role in enabling projects related to electronics, IoT, robotics, and automation.</p>
+  
+  
+      <img src="{{ url_for('static', filename='assets/images/arduino.png') }}" alt="Image 4">
+  
+  
+  <p> Sometimes you need to do two things at once. For example you might want to blink an LED while reading a button press. In this case, you can't use delay(), because Arduino pauses your program during the delay(). If the button is pressed while Arduino is paused waiting for the delay() to pass, your program will miss the button press.</p>
+  
+  <p> This sketch demonstrates how to blink an LED without using delay(). It turns the LED on and then makes note of the time. Then, each time through loop(), it checks to see if the desired blink time has passed. If it has, it toggles the LED on or off and makes note of the new time. In this way the LED blinks continuously while the sketch execution never lags on a single instruction.</p>
+  
+  <p>An analogy would be warming up a pizza in your microwave, and also waiting some important email. You put the pizza in the microwave and set it for 10 minutes. The analogy to using delay() would be to sit in front of the microwave watching the timer count down from 10 minutes until the timer reaches zero. If the important email arrives during this time you will miss it.</p>
+  
+  <p>What you would do in real life would be to turn on the pizza, and then check your email, and then maybe do something else (that doesn't take too long!) and every so often you will come back to the microwave to see if the timer has reached zero, indicating that your pizza is done.</p>
+  
+  <br>
+  <br>
+  
+  <h4>Hardware Required</h4>
+  
+  <p>- Arduino Board</p>
+  <p>- LED</p>
+  <p>- 220 ohm resistor</p>
+  
+  
+  <br>
+  <br>
+  <br>
+  
+  
+  <h4>Circuit</h4>
+  <a href="https://www.arduino.cc" target="_blank">Schema</a>
+  
+  <img src="{{ url_for('static', filename='assets/images/circuit.png') }}" alt="Image 4">
+  
+  
+  
+  <h4>Code</h4>
+  <a href="https://www.arduino.cc" target="_blank">Source code for check </a>
+  <img src="{{ url_for('static', filename='assets/images/code.png') }}" alt="Image 4">
+  
+  
+  <p>Congratulations on completing this comprehensive introduction to the Arduino IDE! You've learned about its interface, how to write and upload code, and even explored the power of non-blocking programming with the "Blink Without Delay" example. These foundational skills are essential for any Arduino project, allowing you to build interactive and innovative solutions. </p>
+  
+  <p>You are now ready to put your knowledge into practice. By applying what you've learned, you'll gain confidence in working with the Arduino IDE and controlling hardware effectively.</p>
+  
+  <br>
+  <br>
+  <br>
+  <br> 
+  
+  <h3> Conclusion : </h3>
+  <p>Congratulations on completing this comprehensive introduction to the Arduino IDE! You've learned about its interface, how to write and upload code, and even explored the power of non-blocking programming with the "Blink Without Delay" example. These foundational skills are essential for any Arduino project, allowing you to build interactive and innovative solutions.</p>
+  <p>You are now ready to put your knowledge into practice. By applying what you've learned, you'll gain confidence in working with the Arduino IDE and controlling hardware effectively.</p>
+  
+  <br>
+  <br>
+  
+  <h5>Next Steps :</h5>
+  <p>It’s time to test your understanding! Head over to the <a href="quiz">exam</a> section to assess your skills and solidify your knowledge. Best of luck, and enjoy your journey into the exciting world of Arduino!</p>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    <style>
+      .spin {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        font-size: 2rem;
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    </style>
+    <section class="upload-section">
+      <div class="container text-center">
+        <div id="loadingIcon" class="loading-icon" style="display: none;">
+          <i class="bi bi-arrow-repeat spin"></i>
         </div>
-    </div>
-    
+        <div id="successMessage" style="display: none; margin-top: 20px;">
+          <h4>Video generated successfully</h4>
+        </div>
+        <div id="videoContainer" style="display: none; margin-top: 20px;">
+          <video id="uploadedVideo" width="600" controls>
+            <source src="static/vid.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        
+        </div>
+        <div id="videoContainer1" style="display: none; margin-top: 20px;">
+          <video id="uploadedVideo" width="600" controls>
+            <source src="static/vid.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        
+        </div>
+      </div>
+    </section>
+      
+     
+      
+      <script>
+        document.getElementById('generate-button').addEventListener('click', function() {
+          let loadingIcon = document.getElementById('loadingIcon');
+          let successMessage = document.getElementById('successMessage');
+          let videoContainer = document.getElementById('videoContainer');
+          
+          loadingIcon.style.display = 'block';
+          successMessage.style.display = 'none';
+          videoContainer.style.display = 'none';
+          
+          setTimeout(() => {
+            loadingIcon.style.display = 'none';
+            successMessage.style.display = 'block';
+            videoContainer.style.display = 'block';
+          }, 10000);
+        });
+        
+      </script>
 
     
     <script>
@@ -431,78 +895,51 @@
 <script src="{{ url_for('static', filename='assets/js/popup.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/custom.js') }}"></script>
 <script>
-    async function sendMessage() {
-        const inputField = document.getElementById('chat-input');
-        const chatMessages = document.getElementById('chat-messages');
-        const pdfUpload = document.getElementById('pdf-upload');
-        const imageUpload = document.getElementById('image-upload');
-        const message = inputField.value.trim();
-        const generateButton = document.getElementById('generate-button');
+  async function sendMessage() {
+    const inputField = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const imageUpload = document.getElementById('image-upload');
+    const message = inputField.value.trim();
 
-
-        // Display user message
-        if (message) {
-            const userMessage = document.createElement('div');
-            userMessage.className = 'user-message';
-            userMessage.textContent = message;
-            chatMessages.appendChild(userMessage);
-            inputField.value = '';
-        }
-
-        const formData = new FormData();
-        if (message) formData.append('query', message);
-
-        if (pdfUpload.files.length > 0) {
-            formData.append('pdf', pdfUpload.files[0]);
-        }
-
-        if (imageUpload.files.length > 0) {
-            Array.from(imageUpload.files).forEach((file, index) => {
-                formData.append(`image_${index}`, file);
-            });
-        }
-
-        // Send request to Flask server
-        try {
-            const response = await fetch('/rag-chat', {
-                method: 'POST',
-                body: formData
-            });
-
-            const data = await response.json();
-
-            const botMessage = document.createElement('div');
-            botMessage.className = 'bot-message';
-            botMessage.textContent = data.answer || data.error || "No response received.";
-            chatMessages.appendChild(botMessage);
-        } catch (err) {
-            const errorMessage = document.createElement('div');
-            errorMessage.className = 'bot-message';
-            errorMessage.textContent = `Error: ${err.message}`;
-            chatMessages.appendChild(errorMessage);
-        }
-
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+    // Display user message
+    if (message) {
+        const userMessage = document.createElement('div');
+        userMessage.className = 'user-message';
+        userMessage.textContent = message;
+        chatMessages.appendChild(userMessage);
+        inputField.value = '';
     }
 
-    function toggleChat() {
-        const chatbox = document.getElementById('chatbox');
-        const chatToggle = document.getElementById('chat-toggle');
-        const generateButton = document.getElementById('generate-button');
+    const formData = new FormData();
+    if (message) formData.append('text', message);
 
-
-        if (chatbox.style.display === 'none' || chatbox.style.display === '') {
-            chatbox.style.display = 'flex';
-            chatToggle.style.display = 'none';
-            generateButton.style.display = 'none';
-
-        } else {
-            chatbox.style.display = 'none';
-            chatToggle.style.display = 'block';
-            generateButton.style.display = 'block';
-
-        }
+    if (imageUpload.files.length > 0) {
+        formData.append('image', imageUpload.files[0]); // Only handle one image for now
     }
+
+    // Send request to Flask server
+    try {
+        const response = await fetch('/pdf-question', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        const botMessage = document.createElement('div');
+        botMessage.className = 'bot-message';
+        botMessage.textContent = data.response || data.error || "No response received.";
+        chatMessages.appendChild(botMessage);
+    } catch (err) {
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'bot-message';
+        errorMessage.textContent = `Error: ${err.message}`;
+        chatMessages.appendChild(errorMessage);
+    }
+
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+}
+
 </script>
 
 

@@ -1,82 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Generator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-        }
-        label, select, button {
-            display: block;
-            margin-bottom: 10px;
-        }
-        .question {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Generator</title>
+  <style>
+    /* Minimal resets for box sizing */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Body styling */
+    html, body {
+      font-family: 'Comfortaa', cursive;
+      min-height: 100vh;
+      background: linear-gradient(to right, #3f2b96, #a8c0ff);
+      color: #fff;
+    }
+
+    /* Container for the quiz sections */
+    #quiz-container, #score-container {
+      width: 90%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Main card styling */
+    main {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .text-container {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    /* Form and label styling */
+    .quiz-options {
+      margin: 20px 0;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.2);
+      margin-bottom: 10px;
+      border-radius: 5px;
+      padding: 10px;
+      cursor: pointer;
+      color: #fff;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    label:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Highlight the selected label */
+    input[type="radio"]:checked + label {
+      background: #3f2b96;
+      border: 1px solid #fff;
+      color: #fff;
+    }
+
+    /* The A/B/C/D bubble */
+    .alphabet {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 2rem;
+      height: 2rem;
+      margin-right: 10px;
+      border: 1px solid #fff;
+      border-radius: 50%;
+    }
+
+    /* Hide radio inputs visually (but keep accessible for screen readers) */
+    input[type="radio"] {
+      display: none;
+    }
+
+    /* Button styling */
+    .btn {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: 1px solid #fff;
+      border-radius: 25px;
+      padding: 10px 20px;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      margin: 10px auto 0;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Score section styling */
+    #score-display {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+
+    /* Buttons container */
+    .button-wrapper {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Quiz Generator</h1>
-        <label for="pdf-id">Enter PDF ID:</label>
-        <input type="number" id="pdf-id" min="1" placeholder="Enter PDF ID (e.g., 1)">
-        <button id="generate-quiz-btn">Generate Quiz</button>
-        <div id="quiz-container"></div>
-    </div>
+  <!-- Quiz Container -->
+  <div id="quiz-container">
+    <main>
+      <h3>Fetching Quiz...</h3>
+    </main>
+  </div>
 
-    <script>
-        document.getElementById("generate-quiz-btn").addEventListener("click", async () => {
-            const pdfId = document.getElementById("pdf-id").value;
-            const quizContainer = document.getElementById("quiz-container");
-            quizContainer.innerHTML = "";
+  <!-- Score Section -->
+  <div id="score-container" style="display: none;">
+    <main>
+      <div class="text-container">
+        <h2>Your Score</h2>
+        <p id="score-display"></p>
+      </div>
+      <div class="button-wrapper">
+        <button class="btn" onclick="restartQuiz()">Restart Quiz</button>
+      </div>
+    </main>
+  </div>
 
-            if (!pdfId) {
-                quizContainer.innerHTML = "<p>Please enter a valid PDF ID.</p>";
-                return;
-            }
+  <script>
+    let currentQuizIndex = 0;
+    let quizzes = [];
 
-            try {
-                const response = await fetch(`/generate_quiz/${pdfId}`);
-                if (!response.ok) {
-                    throw new Error("Failed to fetch quiz data. Please check the PDF ID.");
-                }
+    async function fetchQuizzes() {
+      try {
+        const response = await fetch("/generate-quiz");
+        if (!response.ok) {
+          throw new Error("Failed to fetch quizzes.");
+        }
+        const data = await response.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
 
-                const data = await response.json();
-                if (data.error) {
-                    quizContainer.innerHTML = `<p>Error: ${data.error}</p>`;
-                } else {
-                    const quizQuestions = data.quiz;
-                    if (quizQuestions.length === 0) {
-                        quizContainer.innerHTML = "<p>No quiz could be generated from the selected PDF.</p>";
-                    } else {
-                        quizQuestions.forEach((item, index) => {
-                            const questionElement = document.createElement("div");
-                            questionElement.classList.add("question");
-                            questionElement.innerHTML = `
-                                <p><strong>${item.question}</strong></p>
-                                <pre>${item.answers}</pre>
-                            `;
-                            quizContainer.appendChild(questionElement);
-                        });
-                    }
-                }
-            } catch (error) {
-                quizContainer.innerHTML = `<p>${error.message}</p>`;
-            }
+        quizzes = data.quizzes;
+        renderQuiz(currentQuizIndex);
+      } catch (error) {
+        document.getElementById("quiz-container").innerHTML = `
+          <main>
+            <h3>Error</h3>
+            <p>${error.message}</p>
+          </main>
+        `;
+      }
+    }
+
+    function renderQuiz(index) {
+      const quizContainer = document.getElementById("quiz-container");
+      quizContainer.innerHTML = ""; // Clear any previous content
+
+      const quiz = quizzes[index];
+
+      quiz.forEach((questionItem, questionIndex) => {
+        const section = document.createElement("section");
+        section.id = `section-${questionIndex + 1}`;
+
+        const mainEl = document.createElement("main");
+
+        // Question text
+        const textContainer = document.createElement("div");
+        textContainer.className = "text-container";
+        textContainer.innerHTML = `
+          <h3>Quiz ${index + 1}</h3>
+          <p>Question ${questionIndex + 1} of ${quiz.length}</p>
+          <p>${questionItem.question}</p>
+        `;
+        mainEl.appendChild(textContainer);
+
+        // Answers form
+        const form = document.createElement("form");
+        form.className = "quiz-options";
+        form.dataset.questionIndex = questionIndex;
+
+        questionItem.answers.forEach((answer, i) => {
+          const answerId = `${questionIndex + 1}-${i + 1}`;
+
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.id = answerId;
+          input.name = `question-${questionIndex + 1}`;
+          input.value = answer;
+          input.required = true;
+
+          // Label with the "alphabet" bubble
+          const label = document.createElement("label");
+          label.htmlFor = answerId;
+          label.innerHTML = `
+            <span class="alphabet">${String.fromCharCode(65 + i)}</span>
+            ${answer}
+          `;
+
+          form.appendChild(input);
+          form.appendChild(label);
         });
-    </script>
+
+        mainEl.appendChild(form);
+        section.appendChild(mainEl);
+        quizContainer.appendChild(section);
+      });
+
+      // Add submit button
+      const buttonWrapper = document.createElement("div");
+      buttonWrapper.className = "button-wrapper";
+
+      const submitButton = document.createElement("button");
+      submitButton.textContent = "Submit Quiz";
+      submitButton.className = "btn";
+      submitButton.onclick = () => submitQuiz(index);
+
+      buttonWrapper.appendChild(submitButton);
+      quizContainer.appendChild(buttonWrapper);
+    }
+
+    async function submitQuiz(index) {
+      const quiz = quizzes[index];
+      const userAnswers = [];
+
+      quiz.forEach((_, questionIndex) => {
+        const selectedOption = document.querySelector(
+          `input[name="question-${questionIndex + 1}"]:checked`
+        );
+        if (selectedOption) {
+          userAnswers.push(selectedOption.value);
+        }
+      });
+
+      try {
+        const response = await fetch("/submit-quiz", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quiz, answers: userAnswers }),
+        });
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        showScore(data.score, data.total);
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    }
+
+    function showScore(score, total) {
+      document.getElementById("quiz-container").style.display = "none";
+      const scoreContainer = document.getElementById("score-container");
+      const scoreDisplay = document.getElementById("score-display");
+
+      scoreContainer.style.display = "block";
+      scoreDisplay.textContent = `You scored ${score} out of ${total}`;
+    }
+
+    function restartQuiz() {
+      document.getElementById("score-container").style.display = "none";
+      document.getElementById("quiz-container").style.display = "block";
+      currentQuizIndex = 0;
+      renderQuiz(currentQuizIndex);
+    }
+
+    // Fetch quizzes on page load
+    fetchQuizzes();
+  </script>
 </body>
 </html>
